@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>ZoomAI Translate</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #141414;
+        color: #fff;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      h1 {
+    font-size: 60px;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+    text-shadow: 0px 0px 10px rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+      form {
+        margin-top: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      input[type="text"] {
+        padding: 10px;
+        margin-right: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #eee;
+        width: 80%;
+        font-size: 18px;
+        color: #444;
+      }
+      input[type="submit"] {
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #e50914;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      input[type="submit"]:hover {
+        background-color: #c00b11;
+      }
+      #output {
+        margin-top: 30px;
+        font-size: 24px;
+        text-align: center;
+        text-shadow: 0px 0px 10px rgba(0,0,0,0.8);
+      }
+      #loading {
+        margin-top: 30px;
+        font-size: 24px;
+        text-align: center;
+        text-shadow: 0px 0px 10px rgba(0,0,0,0.8);
+      }
+
+      footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+
+  padding: 10px;
+}
+#feedback-button {
+  position: fixed;
+  bottom: 45px;
+  right: 20px;
+  padding: 10px;
+  background-color: #e50914;
+  color: #fff;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#feedback-button:hover {
+  background-color: #c00b11;
+}
+
+    </style>
+    
+  </head>
+  <body>
+    <div class="container">
+      <div class="alert">
+  <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+  <strong>දැන්වීමයි!</strong> ක්‍රියාත්මකව පවතින කෘතීමව බුද්ධිමත් පද්දතිය තවමත් පරිවර්තනය කිරීමට පුහුනු කරමින් පවතින බැවින් යම් යම් වැරදීම් සිදුවිය හැක.
+
+
+    
+</div>
+   <!--       <div class="container">
+      <div class="alert">
+  <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span> 
+  <strong>Update of the NMT model will be held tomorrow!</strong> 
+
+    
+</div>-->
+      <h1>ZoomAI Translate</h1>
+      <form action="/translate" method="POST">
+        <input type="text" name="input_text" placeholder="Enter text to translate">
+        <input type="submit" value="Translate" style="
+    margin-top: 25px;
+">
+      </form>
+      <div id="output"></div>
+      <div id="loading" style="display:none;">Translating...</div>
+    </div>
+
+<style>
+  #example-buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    color: white;
+  }
+  
+  #example-buttons li {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    border: none;
+    background-color: red;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  
+  #example-buttons li:hover {
+    background-color: #cc0000;
+  }
+  
+  #example-container {
+    text-align: center;
+  }
+
+
+  .alert {
+  padding: 20px;
+  background-color: #f44336;
+  color: #111;
+}
+
+.closebtn {
+  margin-left: 15px;
+  color: white;
+  font-weight: bold;
+  float: right;
+  font-size: 22px;
+  line-height: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.closebtn:hover {
+  color: black;
+}
+</style>
+<!--
+<div id="example-container">
+  <h2>Examples:</h2>
+  <ul id="example-buttons">
+    <li onclick="translateExample('Hello')">Hello</li>
+    <li onclick="translateExample('How are you?')">How are you?</li>
+    <li onclick="translateExample('Where are you?')">Where are you?</li>
+  </ul>
+</div>
+-->
+
+    <script>
+      // Send input text to server when form is submitted
+      document.querySelector('form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        document.getElementById('output').style.display = 'none';
+        document.getElementById('loading').style.display = 'block';
+        fetch('/translate', {
+          method: 'POST',
+          body: new FormData(this)
+        })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('output').style.display = 'block';
+          document.getElementById('output').innerText = data.translation;
+        });
+      });
+
+            // Function to translate examples
+      function translateExample(exampleText) {
+        document.querySelector('input[name="input_text"]').value = exampleText;
+        
+        document.querySelector('form').submit();
+      }
+    </script>
+    
+<a href="https://zaanind.fanclub.rocks/data-collection/" target="_blank">    <button  id="feedback-button">Wrong output? Help us to fix it
+</button></a>
+
+
+    <footer> © Zaanind -  2023 | ZoomNMT July 8 Version
+    </footer>
+
+    
+  </body>
+</html>

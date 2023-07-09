@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SRT Subtitle tool</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <style>
+        .subtitle-table {
+            max-height: 460px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+  
+    <div class="container">
+        <h1>SRT Subtitle Tool</h1>
+
+      <div class="alert alert-warning" role="alert" style="display:none;" id="do">
+  Translation in progress...
+</div>
+<div class="alert alert-success" role="alert" style="display:none;" id="ok">
+  Translation successful!
+</div>
+<div class="alert alert-danger" role="alert" style="display:none;" id="no">
+  Error occurred during translation. Please check the logs.
+</div>
+
+      
+        {% if subtitles %}
+            <form method="POST" action="/download">
+                <div class="subtitle-table">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                                              <th>Select</th>
+
+                                <th>Line Number</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Subtitle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for subtitle in subtitles %}
+                                <tr>
+                                                                      <td><input type="checkbox" name="selected_lines" value="{{ loop.index }}"></td>
+
+                                    <td>{{ loop.index }}</td>
+                                    <td><input type="text" name="start_time" value="{{ subtitle.start }}"></td>
+                                    <td><input type="text" name="end_time" value="{{ subtitle.end }}"></td>
+                                    <td><input type="text" name="subtitle" value="{{ subtitle.text.replace('\n', ' ') }}"></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                        <div style="
+    margin-left: 780px;
+    margin-top: 30px;
+    width: 300px;
+">  
+                <button type="submit" class="btn btn-outline-primary" >Download</button>
+     
+ 
+
+      </div>
+       </form>
+
+                         
+      <button type="button" id="translate-button" class="btn btn-outline-danger">Translate by api</button>
+  
+        {% else %}
+            <form method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="subtitle">Select SRT Subtitle File:</label>
+                    <input type="file" name="subtitle" class="form-control-file">
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        {% endif %}
+    </div>
+
+
+<script>
+  // Define the JavaScript function to be called
+  function translate() {
+    // Your translation logic here
+    // You can make an API call or perform any other actions
+    console.log("Translation function called!");
+    document.getElementById("do").style.display = "block";
+    document.getElementById("ok").style.display = "none";
+
+
+    // Get all selected checkboxes
+    var selectedLines = document.querySelectorAll('input[name="selected_lines"]:checked');
+
+    var translationText = "";
+    var linenumbers = "";
+
+    selectedLines.forEach(function(checkbox) {
+      var lineNumber = checkbox.closest("tr").querySelector("td:nth-child(2)").textContent;
+      var subtitle = checkbox.closest("tr").querySelector('input[name="subtitle"]').value;
+      translationText += subtitle + ";;";
+      linenumbers += lineNumber + ",";
+    });
+
+    // Remove the trailing comma from linenumbers
+    linenumbers = linenumbers.slice(0, -1);
+
+    // Make the API call to translate
+    fetch('/translates', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        input_text: translationText
+      })
+    })
+      .then(response => response.json())
+      .then(data => {
+        // Log the translation
+       // console.log("Translation: " + data.translation + linenumbers);
+
+        // Access translation and linenumbers here
+        var translationLines = data.translation.split('\n');
+        var linestoedit = linenumbers.split(',');
+
+        selectedLines.forEach(function(line, index) {
+          var subtitle = line.closest("tr").querySelector('input[name="subtitle"]');
+          subtitle.value = translationLines[index].replace(/^PRED \d+: /, "");
+          line.checked = false;
+          document.getElementById("do").style.display = "none";
+          document.getElementById("ok").style.display = "block";
+
+          //console.log(subtitle);
+        });
+
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById("do").style.display = "none";
+        document.getElementById("no").style.display = "block";
+
+      });
+  }
+
+  // Add event listener to the button
+  var translateButton = document.getElementById("translate-button");
+  translateButton.addEventListener("click", translate);
+</script>
+
+  
+
+
+  
+</body>
+</html>
